@@ -86,7 +86,7 @@ namespace ConsoleApplicationBase
                         methodParameterValueList.RemoveAt(i);
                         methodParameterValueList.Insert(i, value);
                     }
-                    catch (ArgumentException ex)
+                    catch (ArgumentException)
                     {
                         string argumentName = methodParam.Name;
                         string argumentTypeName = typeRequired.Name;
