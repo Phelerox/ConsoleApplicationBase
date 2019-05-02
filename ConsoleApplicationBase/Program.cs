@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,6 @@ namespace ConsoleApplicationBase
         static void Main(string[] args)
         {
             Console.Title = typeof(Program).Name;
-            
             Run();
         }
 
@@ -20,7 +19,7 @@ namespace ConsoleApplicationBase
         {
             AppState.SetState(State.RUNNING);
             while (AppState.GetState() > State.IDLE)
-            {  
+            {
                 var consoleInput = ReadFromConsole();
                 if (string.IsNullOrWhiteSpace(consoleInput)) continue;
 
@@ -29,11 +28,25 @@ namespace ConsoleApplicationBase
                     // Create a ConsoleCommand instance:
                     var cmd = new ConsoleCommand(consoleInput);
 
-                    // Execute the command:
-                    string result = CommandHandler.Execute(cmd);
+                    switch (cmd.Name)
+                    {
+                        case "help":
+                        case "?":
+                        case "ayuda":
+                            WriteToConsole(BuildHelpMessage());
+                            break;
+                        case "exit":
+                        case "salir":
+                            WriteToConsole("Closing program...");
+                            return;
+                        default:
+                            // Execute the command:
+                            string result = CommandHandler.Execute(cmd);
 
-                    // Write out the result:
-                    WriteToConsole(result);
+                            // Write out the result:
+                            WriteToConsole(result);
+                            break;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -45,18 +58,39 @@ namespace ConsoleApplicationBase
 
         static void WriteToConsole(string message = "")
         {
-            if(message.Length > 0)
+            if (message.Length > 0)
             {
                 Console.WriteLine(message);
             }
         }
 
         const string _readPrompt = "console> ";
-        static string ReadFromConsole(string promptMessage = "")
+        public static string ReadFromConsole(string promptMessage = "")
         {
             // Show a prompt, and get input:
             Console.Write(_readPrompt + promptMessage);
             return Console.ReadLine();
+        }
+
+        static string BuildHelpMessage(string library = null)
+        {
+            var sb = new StringBuilder("Commands: ");
+            sb.AppendLine();
+            foreach (var item in CommandLibrary.Content)
+            {
+                if (library != null && item.Key != library)
+                    continue;
+                foreach (var cmd in item.Value.MethodDictionary)
+                {
+                    sb.Append(ConsoleFormatting.Indent(1));
+                    sb.Append(item.Key);
+                    sb.Append(".");
+                    sb.Append(cmd.Key);
+                    sb.AppendLine();
+                }
+
+            }
+            return sb.ToString();
         }
     }
 }
